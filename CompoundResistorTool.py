@@ -81,6 +81,18 @@ def replaceSuffix(strIn):
         strIn = strIn.replace(i, ".")
     return(float(strIn))
 
+def calcResistor(resistorMin):
+    change = 1
+    while not(resistorMin < e12series[-1] and resistorMin > e12series[0]):
+        if (resistorMin < e12series[0] or (resistorMin > e12series[-1] and resistorMin < 10)):
+            break
+        resistorMin /= 10
+        change *= 10
+    
+    for i in range(len(e12series)-1, -1, -1):
+        if (e12series[i] <= resistorMin):
+            break
+    return(e12series[i]*change)
 
 ########################################################################
 
@@ -101,27 +113,21 @@ def main():
 
     desiredResistor = multiplier*resistorNum
     resistorMin = desiredResistor*(1 - resistorTol/100) #Min value resistor could be
+    standardResistor = calcResistor(resistorMin) #Finds standard resistor value closest to input
+    potValue = desiredResistor-standardResistor # Finds difference between desired and standard values to be made up by potentiometer
 
-    #print(resistorMin)
-
-    change = 1
-    while not(resistorMin < e12series[-1] and resistorMin > e12series[0]):
-        if (resistorMin < e12series[0] or (resistorMin > e12series[-1] and resistorMin < 10)):
-            break
-        resistorMin /= 10
-        change *= 10
-    
-    for i in range(len(e12series)-1, -1, -1):
-        if (e12series[i] <= resistorMin):
-            break
-    standardResistor = e12series[i]*change
     print("Closest standard resistor value: ")
     print(standardResistor)
-    print("Potentiometer value: ")
-    if (desiredResistor-standardResistor >= 0):
-        print(desiredResistor-standardResistor)
+
+    print("Potentiometer value: ") # Actual pot value required
+    if (potValue >= 0):
+        print(potValue)
     else:
         print(0)
+    
+    print("Recommended Standard Potentiometer: ") # 2x Pot value in standard, for convenience
+    print(calcResistor(potValue*2))
+
     print("\n\n\n")
 
     main()
